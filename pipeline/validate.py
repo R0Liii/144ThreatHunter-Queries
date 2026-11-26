@@ -146,10 +146,11 @@ def lint_sigma(sigma: str, meta: dict) -> tuple[list[str], list[str]]:
     return errors, warnings
 
 
-def check_links(urls: list[str]) -> list[str]:
+def check_links(urls: list[str]) -> tuple[list[str], list[str]]:
+    """HTTP errors are errors; a network that can't reach the host is only a warning."""
     import requests
 
-    problems = []
+    problems, unreachable = [], []
     for url in urls:
         try:
             resp = requests.get(url, timeout=20, allow_redirects=True,
@@ -157,8 +158,8 @@ def check_links(urls: list[str]) -> list[str]:
             if resp.status_code >= 400:
                 problems.append(f"source {url} returned HTTP {resp.status_code}")
         except requests.RequestException as exc:
-            problems.append(f"source {url} unreachable: {type(exc).__name__}")
-    return problems
+            unreachable.append(f"source {url} not checked (unreachable from here: {type(exc).__name__})")
+    return problems, unreachable
 
 
 def validate_hunt(path: Path, schema: dict, links: bool) -> tuple[list[str], list[str]]:
@@ -182,7 +183,9 @@ def validate_hunt(path: Path, schema: dict, links: bool) -> tuple[list[str], lis
         warnings += w
     errors += check_source_policy(path, hunt.meta)
     if links:
-        errors += check_links(hunt.meta.get("sources", []))
+        link_errors, link_warnings = check_links(hunt.meta.get("sources", []))
+        errors += link_errors
+        warnings += link_warnings
     return errors, warnings
 
 

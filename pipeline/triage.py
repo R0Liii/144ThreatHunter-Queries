@@ -1,45 +1,18 @@
-"""Triage: pick today's threat from the intel store.
+"""Triage: list today's best candidate threats from the intel store. No AI, no cost.
 
-Usage: python -m pipeline.triage --store intel/intel.json --out pick.json
+Usage: python -m pipeline.triage --store intel/intel.json [--top 15] [--json candidates.json]
 
-Step 1 (code): score recent items by source weight, KEV status, ransomware use, and recency,
-and drop anything already covered by an existing hunt (same CVE or same source URL).
-Step 2 (Claude): from the top candidates, choose the one that gives defenders the most
-useful hunt today, preferring threats with host or network artifacts that KQL can see.
+Scores recent items by source weight, KEV status, ransomware use and recency, and drops
+anything already covered by an existing hunt (same CVE or same source URL). The daily Claude
+session reads this list and chooses one (see PLAYBOOK.md).
 """
 from __future__ import annotations
 
 import argparse
-import json
 from datetime import datetime, timezone
 from pathlib import Path
 
 from pipeline.common import ROOT, all_hunts, read_json, write_json
-from pipeline.llm import ask_json
-
-TOP_N = 15
-
-SYSTEM = """You are the triage lead for 144ThreatHunter, a public repo that publishes one
-threat hunting query a day for Microsoft Defender XDR and Microsoft Sentinel (KQL).
-Pick the single candidate that gives SOC analysts the most useful hunt today. Prefer:
-- confirmed exploitation in the wild (CISA KEV, vendor incident reports) over theoretical bugs;
-- threats with observable host, identity, email or network behavior that Defender or Sentinel
-  tables record (process, file, registry, network, sign-in, email events);
-- broad exposure (common enterprise products) and recency;
-- topics not already covered by an existing hunt.
-Avoid items with no huntable artifact (for example, a client-side bug with no post-exploitation
-behavior) unless nothing better exists. Explain the choice in two or three sentences."""
-
-PICK_SCHEMA = {
-    "type": "object",
-    "additionalProperties": False,
-    "required": ["index", "reason", "hunt_angle"],
-    "properties": {
-        "index": {"type": "integer", "description": "index of the chosen candidate"},
-        "reason": {"type": "string"},
-        "hunt_angle": {"type": "string", "description": "what behavior the query should look for"},
-    },
-}
 
 
 def score(item: dict, now: datetime) -> float:
@@ -51,7 +24,7 @@ def score(item: dict, now: datetime) -> float:
     return s / (1 + age_days / 3)
 
 
-def candidates(store: dict) -> list[dict]:
+def candidates(store: dict, top: int) -> list[dict]:
     hunts = all_hunts()
     covered_cves = {c for h in hunts for c in h.meta["threat"].get("cves", [])}
     covered_urls = {u for h in hunts for u in h.meta.get("sources", [])}
@@ -60,37 +33,35 @@ def candidates(store: dict) -> list[dict]:
         i for i in store["items"].values()
         if i["url"] not in covered_urls and not (set(i.get("cves", [])) & covered_cves)
     ]
-    items.sort(key=lambda i: score(i, now), reverse=True)
-    return items[:TOP_N]
+    for i in items:
+        i["score"] = round(score(i, now), 3)
+    items.sort(key=lambda i: i["score"], reverse=True)
+    return items[:top]
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--store", default=str(ROOT / "intel" / "intel.json"))
-    parser.add_argument("--out", default="pick.json")
+    parser.add_argument("--top", type=int, default=15)
+    parser.add_argument("--json", help="also write the candidates to this file")
     args = parser.parse_args(argv)
 
-    cands = candidates(read_json(Path(args.store), {"items": {}}))
+    cands = candidates(read_json(Path(args.store), {"items": {}}), args.top)
+    if args.json:
+        write_json(Path(args.json), cands)
     if not cands:
-        print("no new candidates; nothing to draft today")
+        print("no new candidates")
         return 2
-    existing = [f"{h.meta['id']}: {h.meta['title']}" for h in all_hunts()][-60:]
-    listing = "\n".join(
-        f"[{n}] {c['title']} | source: {c['source']} | published: {c['published'][:10]} | "
-        f"KEV: {c.get('kev')} | publishable: {c.get('publishable', True)} | CVEs: {', '.join(c.get('cves', [])) or 'none'}\n"
-        f"    {c['summary'][:400]}\n    {c['url']}"
-        for n, c in enumerate(cands)
-    )
-    prompt = (f"Existing hunts (avoid repeats):\n{chr(10).join(existing) or 'none yet'}\n\n"
-              f"Candidates:\n{listing}\n\nChoose one.")
-    pick, _ = ask_json(SYSTEM, [{"role": "user", "content": prompt}], PICK_SCHEMA, effort="medium",
-                       max_tokens=8000)
-    idx = pick["index"]
-    if not 0 <= idx < len(cands):
-        raise SystemExit(f"triage returned an out-of-range index {idx}")
-    result = {"item": cands[idx], "reason": pick["reason"], "hunt_angle": pick["hunt_angle"]}
-    write_json(Path(args.out), result)
-    print(json.dumps({"picked": cands[idx]["title"], "reason": pick["reason"]}, indent=2))
+    for n, c in enumerate(cands):
+        flags = ", ".join(f for f, on in (("KEV", c.get("kev")), ("ransomware", c.get("ransomware")),
+                                          ("RESEARCH-ONLY", not c.get("publishable", True))) if on)
+        print(f"[{n}] score {c['score']} | {c['published'][:10]} | {c['source']}{' | ' + flags if flags else ''}")
+        print(f"    {c['title']}")
+        if c.get("cves"):
+            print(f"    CVEs: {', '.join(c['cves'])}")
+        print(f"    {c['url']}")
+        if c.get("summary"):
+            print(f"    {c['summary'][:300]}")
     return 0
 
 

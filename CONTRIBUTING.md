@@ -2,27 +2,18 @@
 
 ## Daily flow
 
-1. **Collect** (`collect.yml`, every 4 hours): polls the feeds in `pipeline/feeds.yml` and stores
-   new items on the `intel` branch. No AI, no cost.
-2. **Draft** (`daily.yml`, 10:00 UTC): scores the recent items, asks Claude to pick the most
-   huntable threat, researches it with web search and fetch, writes the hunt and a LinkedIn
-   draft, runs the validator, and opens a pull request labelled `daily-hunt`.
+1. **Collect** (`collect.yml`, GitHub Actions, every 4 hours): polls the feeds in
+   `pipeline/feeds.yml` and stores new items on the `intel` branch. Free, no AI.
+2. **Draft** (a Claude scheduled task on Jose's Claude plan, about 4:45 AM Eastern): a Claude
+   session follows [PLAYBOOK.md](PLAYBOOK.md): lists candidates with `pipeline.triage`, picks
+   one, researches it, writes the hunt and LinkedIn draft with `pipeline.new_hunt`, and opens a
+   pull request labelled `daily-hunt`. No API key is needed.
 3. **Review** (Jose): read the PR, run the query in a real tenant if possible, edit, merge.
-   Unmerged drafts close after 3 days.
+   `housekeeping.yml` closes drafts nobody merged within 3 days.
 4. **Publish** (`publish.yml`, on merge): regenerates READMEs, indexes and `feed/hunts.json`,
    and shows the LinkedIn draft in the run summary. Posting to LinkedIn is manual.
 
-## One-time setup
-
-- **Secret:** Settings → Secrets and variables → Actions → New repository secret
-  `ANTHROPIC_API_KEY`.
-- **Let Actions open PRs:** Settings → Actions → General → Workflow permissions → select
-  "Read and write permissions" and tick "Allow GitHub Actions to create and approve pull requests".
-- **Optional model override:** repository variable `THREATHUNTER_MODEL` (default `claude-opus-5-5`).
-
-Note: PRs opened by the workflow's built-in token don't trigger other workflows, so the daily
-job runs the validator itself and puts the results in the PR body. Pushing your own edits to the
-PR branch runs `validate.yml` as normal.
+`validate.yml` checks every PR. All GitHub Actions here are free on public repos.
 
 ## Local commands
 
@@ -32,8 +23,8 @@ python -m pipeline.validate            # check every hunt
 python -m pipeline.validate --check-links hunts/2026/<folder>
 python -m pipeline.render              # rebuild READMEs, indexes, feed
 python -m pipeline.collect --store intel/intel.json
-ANTHROPIC_API_KEY=... python -m pipeline.triage --store intel/intel.json
-ANTHROPIC_API_KEY=... python -m pipeline.draft --pick pick.json
+python -m pipeline.triage --store intel/intel.json
+python -m pipeline.new_hunt spec.json  # create a hunt from a JSON spec
 ```
 
 ## Writing a hunt by hand

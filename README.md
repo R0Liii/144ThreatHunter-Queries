@@ -41,7 +41,7 @@ threat research and security news. Each morning they pick the threat most worth 
 query, which arrives here as a pull request. **Every hunt is reviewed and edited by a human before it is
 merged.** Nothing publishes automatically.
 
-The pipeline lives in [`pipeline/`](pipeline/) and runs on GitHub Actions; see [CONTRIBUTING.md](CONTRIBUTING.md).
+The pipeline lives in [`pipeline/`](pipeline/); see [CONTRIBUTING.md](CONTRIBUTING.md) and [PLAYBOOK.md](PLAYBOOK.md).
 
 ## Disclaimer
 

@@ -1,0 +1,25 @@
+name: Close stale hunt drafts
+
+# Closes agent-drafted hunt PRs that were not reviewed within 3 days.
+on:
+  schedule:
+    - cron: "30 12 * * *"
+  workflow_dispatch:
+
+permissions:
+  pull-requests: write
+  contents: write
+
+jobs:
+  close-stale:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: Close drafts older than 3 days
+        run: |
+          cutoff=$(date -u -d '3 days ago' +%Y-%m-%dT%H:%M:%SZ)
+          gh pr list --label daily-hunt --state open --json number,createdAt \
+            --jq ".[] | select(.createdAt < \"$cutoff\") | .number" |
+            xargs -r -I{} gh pr close {} --delete-branch --comment "Closing unreviewed draft after 3 days."
