@@ -8,6 +8,8 @@ it was built from, known false positives, tuning advice and triage steps for whe
 
 Maintained by Jose ([@R0Liii](https://github.com/R0Liii)) · [144 Cybersecurity](https://144company.com/cyber)
 
+Browse the [144 Threat Hunting library](https://144company.com/threat-hunting) for defensive hunt notes and queries.
+
 ## Latest hunts
 
 <!-- latest-hunts:start -->
