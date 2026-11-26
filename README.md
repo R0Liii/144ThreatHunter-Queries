@@ -18,6 +18,8 @@ Browse the [144 Threat Hunting library](https://144company.com/threat-hunting) f
 | 2026-11-26 | [TH-2026-0001](hunts/2026/2026-11-26-web-server-spawning-shells) | Web server worker processes spawning shells and recon tools | T1505.003, T1059.001, T1059.003 | high |
 <!-- latest-hunts:end -->
 
+[Read TH-2026-0001 on 144company.com](https://144company.com/hunts/web-server-worker-shell-activity) for telemetry requirements and triage guidance.
+
 Browse everything: [by ATT&CK technique](index/by-technique.md) · [by platform](index/by-platform.md) ·
 [JSON feed](feed/hunts.json)
 
