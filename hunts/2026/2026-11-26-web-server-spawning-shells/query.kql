@@ -1,0 +1,22 @@
+// TH-2026-0001 Web server worker processes spawning shells and recon tools
+// Platform: Microsoft Defender XDR advanced hunting.
+// For Microsoft Sentinel, replace Timestamp with TimeGenerated.
+// MITRE ATT&CK: T1505.003, T1059.001, T1059.003, T1033
+let lookback = 7d;
+let WebWorkers = dynamic(["w3wp.exe", "httpd.exe", "nginx.exe", "tomcat.exe", "tomcat8.exe", "tomcat9.exe", "php-cgi.exe", "UMWorkerProcess.exe"]);
+let SuspiciousChildren = dynamic(["cmd.exe", "powershell.exe", "pwsh.exe", "whoami.exe", "net.exe", "net1.exe", "nltest.exe", "systeminfo.exe", "ipconfig.exe", "quser.exe", "tasklist.exe", "certutil.exe", "bitsadmin.exe", "curl.exe", "wget.exe", "rundll32.exe", "regsvr32.exe", "mshta.exe", "wmic.exe", "reg.exe", "schtasks.exe"]);
+DeviceProcessEvents
+| where Timestamp > ago(lookback)
+| where InitiatingProcessFileName in~ (WebWorkers)
+| where FileName in~ (SuspiciousChildren)
+// ASP.NET compilation noise is csc.exe/cvtres.exe, which are not in the child list.
+// Add known-good parent command lines here after baselining:
+| where not(InitiatingProcessCommandLine has_any ("<known-good-app-pool>"))
+| summarize
+    FirstSeen = min(Timestamp),
+    LastSeen = max(Timestamp),
+    Executions = count(),
+    Children = make_set(FileName, 20),
+    SampleCommands = make_set(ProcessCommandLine, 10)
+    by DeviceName, InitiatingProcessFileName, InitiatingProcessCommandLine, AccountName
+| order by Executions desc
