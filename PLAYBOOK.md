@@ -11,14 +11,31 @@ git fetch origin intel && git worktree add intel origin/intel   # intel store fr
 python -m pipeline.triage --store intel/intel.json --top 15
 ```
 
-If the intel branch is missing or empty, use web search for threats from the last 72 hours
-(CISA KEV additions, CISA advisories, vendor incident write-ups) instead.
+Triage only lists **critical and high** threats. Clutter (product news, webinars, roundups,
+low-impact bugs) and things an EDR or SIEM can't see (industrial control / OT gear) are
+already filtered out. Each line shows its severity, source kind and why it qualified.
+
+If the intel branch is missing or empty, use web search for critical and high threats from the
+last 72 hours (vendor intrusion and campaign write-ups, CISA advisories, CISA KEV additions).
+
+If triage prints "no critical or high candidates today", or none of the candidates can be
+hunted in Defender XDR or Sentinel, skip the day: open no PR and report why. A missed day is
+better than a weak hunt.
 
 Skip the day (open no PR) if an open PR labelled `daily-hunt` from today already exists.
 
 ## 2. Pick one threat
 
+This is a threat hunting library, not a CVE feed. Hunt how attackers behave.
+
 Choose the candidate that gives SOC analysts the most useful hunt today:
+- **critical or high only**; the hunt's `severity` must be `critical` or `high`;
+- attacker behavior first: intrusion write-ups, ransomware and APT campaigns, phishing and
+  identity attacks (token theft, MFA bypass, OAuth abuse), malware and loaders, living off the
+  land, edge-device exploitation followed by post-exploitation activity;
+- when the lead is a CVE, hunt what attackers do with it (the child processes, web shells,
+  sign-ins, persistence and network activity after exploitation), not just the vulnerable
+  version. Pick a bare CVE only when nothing behavior-based is as strong that day;
 - confirmed exploitation in the wild (CISA KEV, vendor incident reports) over theoretical bugs;
 - observable host, identity, email or network behavior that Defender XDR or Sentinel tables
   record (process, file, registry, network, sign-in, email events);

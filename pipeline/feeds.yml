@@ -1,37 +1,100 @@
 # Threat intel sources the Collector polls. Feeds that fail are logged and skipped.
+#
+# kind tells triage what a source is, so hunts follow attacker behavior and not just CVEs:
+#   research  - intrusion write-ups, campaign and malware analysis (best hunts come from these)
+#   advisory  - government advisories, often full of TTPs (CISA joint advisories)
+#   kev       - CISA Known Exploited Vulnerabilities (confirmed exploitation, CVE only)
+#   news      - security news; useful for what is happening now, lower trust
 # weight raises an item's triage priority (1.0 = neutral).
 # Set publishable: false on a research-only source (see source_policy.yml): agents may use it
 # as a lead but must find a publishable source before drafting a hunt.
-# Check each URL on the first run; feed addresses move from time to time.
+# Feed addresses move; when one goes quiet, check it (last verified 2026-11-26).
 kev:
   name: CISA Known Exploited Vulnerabilities
   url: https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json
-  weight: 2.0
+  kind: kev
+  weight: 0.8
 rss:
+  # Government advisories
   - name: CISA Cybersecurity Advisories
     url: https://www.cisa.gov/cybersecurity-advisories/all.xml
-    weight: 1.8
-  - name: Microsoft Security Blog
-    url: https://www.microsoft.com/en-us/security/blog/feed/
-    weight: 1.5
-  - name: Google Threat Intelligence (Mandiant)
-    url: https://cloud.google.com/blog/topics/threat-intelligence/rss/
-    weight: 1.5
-  - name: Unit 42
-    url: https://unit42.paloaltonetworks.com/feed/
-    weight: 1.5
-  - name: Cisco Talos
-    url: https://blog.talosintelligence.com/rss/
-    weight: 1.5
+    kind: advisory
+    weight: 2.2
+  # Threat research: intrusions, campaigns, malware, attacker tradecraft
   - name: The DFIR Report
     url: https://thedfirreport.com/feed/
-    weight: 1.6
+    kind: research
+    weight: 2.5
+  - name: Microsoft Security Blog
+    url: https://www.microsoft.com/en-us/security/blog/feed/
+    kind: research
+    weight: 2.2
+  - name: Google Threat Intelligence (Mandiant)
+    url: https://feeds.feedburner.com/threatintelligence/pvexyqv7v0v
+    kind: research
+    weight: 2.2
+  - name: Red Canary
+    url: https://redcanary.com/blog/feed/
+    kind: research
+    weight: 2.2
   - name: Huntress Blog
     url: https://www.huntress.com/blog/rss.xml
-    weight: 1.4
+    kind: research
+    weight: 2.0
+  - name: Unit 42
+    url: https://unit42.paloaltonetworks.com/feed/
+    kind: research
+    weight: 2.0
+  - name: Cisco Talos
+    url: https://blog.talosintelligence.com/rss/
+    kind: research
+    weight: 2.0
+  - name: Elastic Security Labs
+    url: https://www.elastic.co/security-labs/rss/feed.xml
+    kind: research
+    weight: 2.0
+  - name: SentinelOne Labs
+    url: https://www.sentinelone.com/labs/feed/
+    kind: research
+    weight: 2.0
+  - name: Volexity
+    url: https://www.volexity.com/feed/
+    kind: research
+    weight: 2.0
+  - name: Proofpoint Threat Insight
+    url: https://www.proofpoint.com/us/threat-insight-blog.xml
+    kind: research
+    weight: 1.9
+  - name: Check Point Research
+    url: https://research.checkpoint.com/feed/
+    kind: research
+    weight: 1.8
+  - name: Kaspersky Securelist
+    url: https://securelist.com/feed/
+    kind: research
+    weight: 1.8
+  - name: Zscaler ThreatLabz
+    url: https://www.zscaler.com/blogs/feeds/security-research
+    kind: research
+    weight: 1.8
+  - name: ESET WeLiveSecurity
+    url: https://www.welivesecurity.com/en/rss/feed/
+    kind: research
+    weight: 1.7
+  - name: watchTowr Labs
+    url: https://labs.watchtowr.com/rss/
+    kind: research
+    weight: 1.7
+  - name: Rapid7 Blog
+    url: https://www.rapid7.com/blog/rss/
+    kind: research
+    weight: 1.6
+  # News
   - name: BleepingComputer
     url: https://www.bleepingcomputer.com/feed/
+    kind: news
     weight: 1.0
   - name: The Record
     url: https://therecord.media/feed
+    kind: news
     weight: 1.0
