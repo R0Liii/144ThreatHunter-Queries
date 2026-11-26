@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.venv/
+pick.json
+pr_body.md
+intel/
+validation.json
