@@ -1,0 +1,37 @@
+# Threat intel sources the Collector polls. Feeds that fail are logged and skipped.
+# weight raises an item's triage priority (1.0 = neutral).
+# Set publishable: false on a research-only source (see source_policy.yml): agents may use it
+# as a lead but must find a publishable source before drafting a hunt.
+# Check each URL on the first run; feed addresses move from time to time.
+kev:
+  name: CISA Known Exploited Vulnerabilities
+  url: https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json
+  weight: 2.0
+rss:
+  - name: CISA Cybersecurity Advisories
+    url: https://www.cisa.gov/cybersecurity-advisories/all.xml
+    weight: 1.8
+  - name: Microsoft Security Blog
+    url: https://www.microsoft.com/en-us/security/blog/feed/
+    weight: 1.5
+  - name: Google Threat Intelligence (Mandiant)
+    url: https://cloud.google.com/blog/topics/threat-intelligence/rss/
+    weight: 1.5
+  - name: Unit 42
+    url: https://unit42.paloaltonetworks.com/feed/
+    weight: 1.5
+  - name: Cisco Talos
+    url: https://blog.talosintelligence.com/rss/
+    weight: 1.5
+  - name: The DFIR Report
+    url: https://thedfirreport.com/feed/
+    weight: 1.6
+  - name: Huntress Blog
+    url: https://www.huntress.com/blog/rss.xml
+    weight: 1.4
+  - name: BleepingComputer
+    url: https://www.bleepingcomputer.com/feed/
+    weight: 1.0
+  - name: The Record
+    url: https://therecord.media/feed
+    weight: 1.0

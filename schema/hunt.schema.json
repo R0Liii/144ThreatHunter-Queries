@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "144ThreatHunter hunt metadata",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id", "title", "date", "author", "status", "severity", "platforms",
+    "tables", "attack", "threat", "summary", "sources", "false_positives",
+    "tuning", "triage", "validated"
+  ],
+  "properties": {
+    "id": {"type": "string", "pattern": "^TH-[0-9]{4}-[0-9]{4}$"},
+    "title": {"type": "string", "minLength": 10, "maxLength": 120},
+    "date": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},
+    "author": {"type": "string"},
+    "status": {"enum": ["experimental", "tested", "stable"]},
+    "severity": {"enum": ["low", "medium", "high", "critical"]},
+    "platforms": {
+      "type": "array", "minItems": 1, "uniqueItems": true,
+      "items": {"enum": ["defender-xdr", "sentinel"]}
+    },
+    "tables": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+    "attack": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tactics", "techniques"],
+      "properties": {
+        "tactics": {"type": "array", "minItems": 1, "items": {"type": "string", "pattern": "^TA[0-9]{4}$"}},
+        "techniques": {"type": "array", "minItems": 1, "items": {"type": "string", "pattern": "^T[0-9]{4}(\\.[0-9]{3})?$"}}
+      }
+    },
+    "threat": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "name": {"type": "string"},
+        "cves": {"type": "array", "items": {"type": "string", "pattern": "^CVE-[0-9]{4}-[0-9]{4,}$"}},
+        "actors": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "summary": {"type": "string", "minLength": 40, "maxLength": 600},
+    "sources": {"type": "array", "minItems": 1, "items": {"type": "string", "pattern": "^https://"}},
+    "false_positives": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+    "tuning": {"type": "string"},
+    "triage": {"type": "array", "minItems": 2, "items": {"type": "string"}},
+    "validated": {"enum": ["syntax", "lab", "production"]}
+  }
+}

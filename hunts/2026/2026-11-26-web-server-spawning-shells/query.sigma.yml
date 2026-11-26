@@ -1,0 +1,55 @@
+title: Web Server Worker Process Spawning Shells or Recon Tools
+id: 6f1c2a52-5e0b-4b8e-9a4c-1440a0000001
+status: experimental
+description: >-
+  Detects IIS, Apache, nginx, Tomcat and PHP worker processes launching command shells,
+  PowerShell, or common discovery and download tools, a common sign of web shell activity.
+  Portable version of 144ThreatHunter hunt TH-2026-0001.
+references:
+  - https://attack.mitre.org/techniques/T1505/003/
+author: Jose (R0Liii)
+date: 2026-11-26
+tags:
+  - attack.persistence
+  - attack.execution
+  - attack.discovery
+  - attack.t1505.003
+  - attack.t1059.001
+  - attack.t1059.003
+  - attack.t1033
+logsource:
+  category: process_creation
+  product: windows
+detection:
+  selection_parent:
+    ParentImage|endswith:
+      - '\w3wp.exe'
+      - '\httpd.exe'
+      - '\nginx.exe'
+      - '\tomcat.exe'
+      - '\tomcat8.exe'
+      - '\tomcat9.exe'
+      - '\php-cgi.exe'
+      - '\UMWorkerProcess.exe'
+  selection_child:
+    Image|endswith:
+      - '\cmd.exe'
+      - '\powershell.exe'
+      - '\pwsh.exe'
+      - '\whoami.exe'
+      - '\net.exe'
+      - '\net1.exe'
+      - '\nltest.exe'
+      - '\systeminfo.exe'
+      - '\certutil.exe'
+      - '\bitsadmin.exe'
+      - '\curl.exe'
+      - '\rundll32.exe'
+      - '\regsvr32.exe'
+      - '\mshta.exe'
+      - '\wmic.exe'
+      - '\schtasks.exe'
+  condition: selection_parent and selection_child
+falsepositives:
+  - Health-check or deployment scripts run by an app pool on purpose
+level: high

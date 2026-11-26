@@ -1,0 +1,53 @@
+<!--
+  144ThreatHunter section for 144company.com/cyber
+  Paste this block into cyber.html where the hunts should appear (for example, after the
+  Products section). It loads the latest hunts from the public GitHub repo when the page
+  opens, so the site stays current without re-uploading. Links go to GitHub only.
+  Requires the repo to be public. Adjust the CSS variables to match the site's colors.
+-->
+<section id="threat-hunts" class="th-section" aria-labelledby="th-heading">
+  <style>
+    .th-section { --th-text: inherit; --th-muted: #6b7280; --th-border: #e5e7eb; --th-accent: #1d4ed8;
+      max-width: 1100px; margin: 64px auto; padding: 0 16px; }
+    .th-section h2 { margin: 0 0 8px; }
+    .th-section .th-lead { color: var(--th-muted); margin: 0 0 24px; }
+    .th-list { display: grid; gap: 12px; list-style: none; margin: 0; padding: 0; }
+    .th-item { border: 1px solid var(--th-border); border-radius: 8px; padding: 16px; }
+    .th-item a { color: var(--th-accent); font-weight: 600; text-decoration: none; }
+    .th-item a:hover { text-decoration: underline; }
+    .th-meta { color: var(--th-muted); font-size: 0.875rem; margin-top: 4px; }
+    .th-summary { margin: 8px 0 0; }
+    .th-more { display: inline-block; margin-top: 16px; color: var(--th-accent); font-weight: 600; }
+  </style>
+  <h2 id="th-heading">Daily threat hunts</h2>
+  <p class="th-lead">Free KQL hunting queries for Microsoft Defender XDR and Sentinel, built for the threats being exploited right now.</p>
+  <ul class="th-list" id="th-list"><li class="th-item">Loading the latest hunts...</li></ul>
+  <a class="th-more" href="https://github.com/R0Liii/144ThreatHunter-Queries">All hunts on GitHub &rarr;</a>
+  <script>
+    (function () {
+      var FEED = "https://raw.githubusercontent.com/R0Liii/144ThreatHunter-Queries/main/feed/hunts.json";
+      var SHOW = 5;
+      var list = document.getElementById("th-list");
+      function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text) e.textContent = text; return e; }
+      fetch(FEED, { cache: "no-cache" })
+        .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+        .then(function (data) {
+          list.textContent = "";
+          (data.hunts || []).slice(0, SHOW).forEach(function (h) {
+            var li = el("li", "th-item");
+            var a = el("a", null, h.id + ": " + h.title);
+            a.href = h.url; a.rel = "noopener";
+            li.appendChild(a);
+            li.appendChild(el("div", "th-meta", h.date + " \u00b7 " + h.severity + " severity \u00b7 ATT&CK " + (h.techniques || []).join(", ")));
+            li.appendChild(el("p", "th-summary", h.summary));
+            list.appendChild(li);
+          });
+          if (!list.children.length) list.appendChild(el("li", "th-item", "New hunts are on the way."));
+        })
+        .catch(function () {
+          list.textContent = "";
+          list.appendChild(el("li", "th-item", "See the latest hunts on GitHub."));
+        });
+    })();
+  </script>
+</section>
