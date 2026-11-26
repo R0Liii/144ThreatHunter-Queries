@@ -946,6 +946,20 @@
       "url": "https://therecord.media/australia-passes-online-safety-legislation-preempt-harms",
       "weight": 1.0
     },
+    "url:https://therecord.media/britain-delays-national-cyber-action-plan-again": {
+      "cves": [],
+      "kev": false,
+      "key": "url:https://therecord.media/britain-delays-national-cyber-action-plan-again",
+      "publishable": true,
+      "published": "2026-11-26T00:00:00+00:00",
+      "ransomware": false,
+      "seen_at": "2026-11-26T13:58:11.469512+00:00",
+      "source": "The Record",
+      "summary": "Officials, who had planned to publish the document in mid-November, now aim to unveil the strategy for defending the wider economy against state-backed and criminal hackers on December 9.",
+      "title": "UK\u2019s long-awaited National Cyber Action Plan delayed until December",
+      "url": "https://therecord.media/britain-delays-national-cyber-action-plan-again",
+      "weight": 1.0
+    },
     "url:https://therecord.media/fifa-data-breach-limited": {
       "cves": [],
       "kev": false,
@@ -1383,6 +1397,20 @@
       "summary": "The ShinyHunters extortion gang claims to have returned in posts on a new data leak site after a series of arrests over the past two months targeting alleged members. [...]",
       "title": "ShinyHunters claims to return after FBI arrests, uses old PGP keys as proof",
       "url": "https://www.bleepingcomputer.com/news/security/shinyhunters-resurfaces-after-fbi-arrests-uses-old-pgp-keys-as-proof/",
+      "weight": 1.0
+    },
+    "url:https://www.bleepingcomputer.com/news/security/sys010-malware-abuses-browser-management-to-spy-on-gmail-outlook/": {
+      "cves": [],
+      "kev": false,
+      "key": "url:https://www.bleepingcomputer.com/news/security/sys010-malware-abuses-browser-management-to-spy-on-gmail-outlook/",
+      "publishable": true,
+      "published": "2026-11-26T11:50:17+00:00",
+      "ransomware": false,
+      "seen_at": "2026-11-26T13:58:11.394000+00:00",
+      "source": "BleepingComputer",
+      "summary": "A new version of the SYS01 infostealer malware delivered through Meta ads is enrolling browsers into enterprise-style management to force the installation of an extension that steals sensitive data, including Gmail and Outlook emails. [...]",
+      "title": "SYS010 malware abuses browser management to spy on Gmail, Outlook",
+      "url": "https://www.bleepingcomputer.com/news/security/sys010-malware-abuses-browser-management-to-spy-on-gmail-outlook/",
       "weight": 1.0
     },
     "url:https://www.bleepingcomputer.com/news/security/turnitin-discloses-cyberattack-affecting-customer-facing-systems/": {
@@ -1965,20 +1993,6 @@
       "url": "https://www.huntress.com/blog/brute-force-sentry",
       "weight": 1.4
     },
-    "url:https://www.huntress.com/blog/camera-management-software-compromise-malware": {
-      "cves": [],
-      "kev": false,
-      "key": "url:https://www.huntress.com/blog/camera-management-software-compromise-malware",
-      "publishable": true,
-      "published": "2026-10-27T13:00:00+00:00",
-      "ransomware": false,
-      "seen_at": "2026-11-26T05:01:05.345669+00:00",
-      "source": "Huntress Blog",
-      "summary": "Attackers compromised camera management software to deploy malware, establish persistence, and beacon to C2. Huntress breaks down the attack chain and IOCs.",
-      "title": "Camera Management Software Compromise Leads to Malware Deployment",
-      "url": "https://www.huntress.com/blog/camera-management-software-compromise-malware",
-      "weight": 1.4
-    },
     "url:https://www.huntress.com/blog/crafty-microsoft-teams-booking-flow-disguises-device-code-phishing": {
       "cves": [],
       "kev": false,
@@ -2247,6 +2261,20 @@
       "url": "https://www.huntress.com/blog/the-evolving-tradecraft-of-clickfix",
       "weight": 1.4
     },
+    "url:https://www.huntress.com/blog/three-attacks-zero-exploits-microsoft-365": {
+      "cves": [],
+      "kev": false,
+      "key": "url:https://www.huntress.com/blog/three-attacks-zero-exploits-microsoft-365",
+      "publishable": true,
+      "published": "2026-11-25T08:00:00+00:00",
+      "ransomware": false,
+      "seen_at": "2026-11-26T13:58:11.295698+00:00",
+      "source": "Huntress Blog",
+      "summary": "Learn how three real-world attacks turn ordinary user actions into full Microsoft 365 compromise, and what to fix before they land in your inbox.",
+      "title": "Three Attacks, Zero Exploits in Microsoft 365",
+      "url": "https://www.huntress.com/blog/three-attacks-zero-exploits-microsoft-365",
+      "weight": 1.4
+    },
     "url:https://www.huntress.com/blog/tradecraft-tuesday-clickfix-lures-and-infrastructure": {
       "cves": [],
       "kev": false,
@@ -2444,5 +2472,5 @@
       "weight": 1.5
     }
   },
-  "updated": "2026-11-26T05:01:05.667805+00:00"
+  "updated": "2026-11-26T13:58:11.469582+00:00"
 }
