@@ -9,7 +9,7 @@ Exit code 1 means the checker found errors; fix the spec and run again (the same
 title reuse the same folder and id).
 
 spec.json fields:
-  title, severity (low|medium|high|critical), platforms ([defender-xdr, sentinel]), tables,
+  title, severity (high|critical; lower is rejected), platforms ([defender-xdr, sentinel]), tables,
   attack {tactics, techniques}, threat {name, cves, actors}, summary, sources,
   false_positives, tuning, triage, kql, sigma ("" when none), linkedin_post (use {HUNT_URL}),
   why_today, source_item {title, url, source}
@@ -68,6 +68,9 @@ def main(argv: list[str] | None = None) -> int:
     missing = [k for k in REQUIRED if k not in spec]
     if missing:
         print(f"spec.json is missing: {missing}")
+        return 1
+    if spec["severity"] not in ("critical", "high"):
+        print(f"severity is {spec['severity']!r}: 144ThreatHunter only publishes critical and high hunts")
         return 1
     today = args.date
     folder = ROOT / "hunts" / today[:4] / f"{today}-{slugify(spec['title'], 50)}"

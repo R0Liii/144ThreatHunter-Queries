@@ -36,6 +36,7 @@ def collect_kev(cfg: dict, since: datetime) -> list[dict]:
         items.append({
             "key": f"kev:{v['cveID']}",
             "source": cfg["name"],
+            "kind": cfg.get("kind", "kev"),
             "weight": cfg.get("weight", 1.0),
             "title": f"{v['cveID']} {v['vendorProject']} {v['product']}: {v['vulnerabilityName']}",
             "url": f"https://nvd.nist.gov/vuln/detail/{v['cveID']}",
@@ -64,6 +65,7 @@ def collect_rss(cfg: dict, since: datetime) -> list[dict]:
         items.append({
             "key": f"url:{e.get('link')}",
             "source": cfg["name"],
+            "kind": cfg.get("kind", "news"),
             "weight": cfg.get("weight", 1.0),
             "title": e.get("title", "").strip(),
             "url": e.get("link"),
