@@ -13,6 +13,7 @@ Maintained by Jose ([@R0Liii](https://github.com/R0Liii)) · [144 Cybersecurity]
 <!-- latest-hunts:start -->
 | Date | ID | Hunt | ATT&CK | Severity |
 | --- | --- | --- | --- | --- |
+| 2026-11-26 | [TH-2026-0002](hunts/2026/2026-11-26-drupal-installer-abuse-on-linux-web-servers) | Drupal installer abuse on Linux web servers | T1190, T1505.003, T1059.004 | critical |
 | 2026-11-26 | [TH-2026-0001](hunts/2026/2026-11-26-web-server-spawning-shells) | Web server worker processes spawning shells and recon tools | T1505.003, T1059.001, T1059.003 | high |
 <!-- latest-hunts:end -->
 
