@@ -40,6 +40,41 @@ KNOWN_TABLES = {
     "AzureDiagnostics", "SecurityAlert", "SecurityIncident", "ThreatIntelligenceIndicator",
     "DnsEvents", "Event", "Heartbeat",
 }
+URL_RE = re.compile(r"https?://[^\s)\"'>\]]+", re.IGNORECASE)
+
+
+def research_only_domains() -> list[str]:
+    import yaml
+
+    policy = yaml.safe_load((ROOT / "pipeline" / "source_policy.yml").read_text(encoding="utf-8"))
+    return [d.lower() for d in policy.get("research_only") or []]
+
+
+def _host_matches(text: str, domains: list[str]) -> list[str]:
+    hits = []
+    lowered = text.lower()
+    for d in domains:
+        if re.search(rf"(^|[^a-z0-9-]){re.escape(d)}\b", lowered):
+            hits.append(d)
+    return hits
+
+
+def check_source_policy(path: Path, meta: dict) -> list[str]:
+    """Research-only sources may never appear in published files."""
+    errors = []
+    domains = research_only_domains()
+    texts = {f.name: f.read_text(encoding="utf-8") for f in path.iterdir() if f.is_file()}
+    draft = ROOT / "drafts" / "linkedin" / f"{meta.get('id')}.md"
+    if draft.exists():
+        texts[f"drafts/linkedin/{draft.name}"] = draft.read_text(encoding="utf-8")
+    for name, text in texts.items():
+        for d in _host_matches(text, domains):
+            errors.append(f"{name} mentions research-only source {d}; it may be a lead but must not be published")
+    if not meta.get("sources"):
+        errors.append("every hunt must link at least one source")
+    return errors
+
+
 TIME_FILTER = re.compile(r"\b(Timestamp|TimeGenerated)\s*(>|>=|between)\s*", re.IGNORECASE)
 
 
@@ -145,6 +180,7 @@ def validate_hunt(path: Path, schema: dict, links: bool) -> tuple[list[str], lis
         e, w = lint_sigma(hunt.sigma, hunt.meta)
         errors += e
         warnings += w
+    errors += check_source_policy(path, hunt.meta)
     if links:
         errors += check_links(hunt.meta.get("sources", []))
     return errors, warnings

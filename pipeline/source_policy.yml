@@ -1,0 +1,13 @@
+# Which sources may appear in anything published (repo, feed, website, LinkedIn drafts).
+#
+# research_only: personal-use or non-redistributable sources. Agents may read them as leads,
+# but they must never be cited, linked or quoted in a published hunt. The checker fails any
+# hunt that mentions one of these domains anywhere in its files.
+research_only:
+  - ransomware.live
+#
+# open_data: sources whose data may be republished (for reference; any public page may be
+# linked as a citation).
+open_data:
+  - cisa.gov          # CISA KEV and advisories (US government, public domain)
+  - abuse.ch          # Feodo Tracker and other abuse.ch feeds (CC0)

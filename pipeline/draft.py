@@ -19,6 +19,7 @@ import yaml
 from pipeline import render, validate
 from pipeline.common import AUTHOR, ROOT, SCHEMA_PATH, load_hunt, next_hunt_id, read_json, slugify
 from pipeline.llm import ask_json, cited_urls
+from pipeline.validate import research_only_domains
 
 SYSTEM = """You are a senior threat hunter writing for 144ThreatHunter, a public GitHub repo of
 threat hunting queries for Microsoft Defender XDR advanced hunting and Microsoft Sentinel.
@@ -27,7 +28,10 @@ Your name is not on the work; Jose's is, so accuracy matters more than speed.
 Research first. Use web_fetch on the source URL you are given, then web_search and web_fetch for
 the vendor advisory, CISA advisory, and any technical write-up with indicators or behavior.
 Rules:
-- Every factual claim must come from a page you fetched in this session. List only fetched
+- Never cite, link, quote or name these research-only sources anywhere in your output, including
+  the LinkedIn post: {research_only}. You may read them as leads, then find a publishable source
+  (vendor advisory, CISA, researcher blog) for every claim. If none exists, say so in `summary`.
+- Every hunt must link its sources. Every factual claim must come from a page you fetched in this session. List only fetched
   pages in `sources`, primary sources first. Never invent CVEs, actors, file names or IOCs.
 - Hunt for behavior (process lineage, command lines, file writes, network patterns, sign-ins)
   rather than only hashes or IPs, which go stale within days. Indicators are fine as an extra
@@ -123,7 +127,11 @@ def main(argv: list[str] | None = None) -> int:
         f"Triage note: {pick['reason']}\nSuggested angle: {pick['hunt_angle']}\n\n"
         "Research it and write the hunt."
     )
-    out, history = ask_json(SYSTEM, [{"role": "user", "content": prompt}], draft_schema(), web=True)
+    system = SYSTEM.replace("{research_only}", ", ".join(research_only_domains()) or "none")
+    if not item.get("publishable", True):
+        prompt += ("\n\nThe source above is research-only: use it as a lead, but do not cite or link it. "
+                   "Find publishable sources for every claim.")
+    out, history = ask_json(system, [{"role": "user", "content": prompt}], draft_schema(), web=True)
 
     folder = ROOT / "hunts" / today[:4] / f"{today}-{slugify(out['title'], 50)}"
     schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
@@ -131,8 +139,11 @@ def main(argv: list[str] | None = None) -> int:
     warnings: list[str] = []
     for attempt in range(2):
         write_hunt(out, hunt_id, today, folder)
+        post_path = ROOT / "drafts" / "linkedin" / f"{hunt_id}.md"
+        post_path.parent.mkdir(parents=True, exist_ok=True)
+        post_path.write_text(out["linkedin_post"].strip() + "\n", encoding="utf-8")
         errors, warnings = validate.validate_hunt(folder, schema, links=False)
-        fetched = cited_urls(history) | {item["url"]}
+        fetched = cited_urls(history) | ({item["url"]} if item.get("publishable", True) else set())
         unfetched = [s for s in out["sources"] if s not in fetched]
         if unfetched:
             errors.append(f"sources not fetched or searched in this session: {unfetched}")
@@ -141,7 +152,7 @@ def main(argv: list[str] | None = None) -> int:
         history.append({"role": "user", "content": (
             "The validator found these problems. Fix them and return the full hunt again:\n- "
             + "\n- ".join(errors))})
-        out, history = ask_json(SYSTEM, history, draft_schema(), web=True)
+        out, history = ask_json(system, history, draft_schema(), web=True)
 
     render.main()
     hunt = load_hunt(folder)

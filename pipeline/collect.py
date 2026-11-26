@@ -43,6 +43,7 @@ def collect_kev(cfg: dict, since: datetime) -> list[dict]:
             "summary": v.get("shortDescription", ""),
             "cves": [v["cveID"]],
             "kev": True,
+            "publishable": True,
             "ransomware": v.get("knownRansomwareCampaignUse") == "Known",
         })
     return items
@@ -70,6 +71,7 @@ def collect_rss(cfg: dict, since: datetime) -> list[dict]:
             "summary": re.sub(r"\s+", " ", summary).strip()[:1000],
             "cves": sorted({c.upper() for c in CVE_RE.findall(text)}),
             "kev": False,
+            "publishable": cfg.get("publishable", True),
             "ransomware": "ransomware" in text.lower(),
         })
     return items

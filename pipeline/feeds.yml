@@ -1,5 +1,7 @@
 # Threat intel sources the Collector polls. Feeds that fail are logged and skipped.
 # weight raises an item's triage priority (1.0 = neutral).
+# Set publishable: false on a research-only source (see source_policy.yml): agents may use it
+# as a lead but must find a publishable source before drafting a hunt.
 # Check each URL on the first run; feed addresses move from time to time.
 kev:
   name: CISA Known Exploited Vulnerabilities

@@ -77,7 +77,7 @@ def main(argv: list[str] | None = None) -> int:
     existing = [f"{h.meta['id']}: {h.meta['title']}" for h in all_hunts()][-60:]
     listing = "\n".join(
         f"[{n}] {c['title']} | source: {c['source']} | published: {c['published'][:10]} | "
-        f"KEV: {c.get('kev')} | CVEs: {', '.join(c.get('cves', [])) or 'none'}\n"
+        f"KEV: {c.get('kev')} | publishable: {c.get('publishable', True)} | CVEs: {', '.join(c.get('cves', [])) or 'none'}\n"
         f"    {c['summary'][:400]}\n    {c['url']}"
         for n, c in enumerate(cands)
     )

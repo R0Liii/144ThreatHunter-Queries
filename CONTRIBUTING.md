@@ -42,6 +42,13 @@ Copy an existing folder under `hunts/<year>/`, rename it `YYYY-MM-DD-short-name`
 `hunt.yml` (see `schema/hunt.schema.json`), `query.kql` and optionally `query.sigma.yml`,
 then run `python -m pipeline.validate` and `python -m pipeline.render`.
 
+## Source policy
+
+Every hunt links its sources. Personal-use or non-redistributable sources (for example
+Ransomware.live) are listed under `research_only` in `pipeline/source_policy.yml`: agents may
+use them as leads, but the checker fails any hunt, README or LinkedIn draft that mentions them.
+Open data such as CISA KEV and abuse.ch Feodo Tracker (CC0) is fine to cite.
+
 ## Website
 
 `site/hunts-section.html` is a block for 144company.com/cyber that lists the latest hunts from
