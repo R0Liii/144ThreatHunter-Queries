@@ -1,0 +1,38 @@
+title: Drupal settings.php Written by Web Server Process
+id: 6f1c2a52-5e0b-4b8e-9a4c-1440a0000002
+status: experimental
+description: >-
+  Detects a PHP or web server worker process creating or modifying a Drupal settings.php file,
+  which is what an abused Drupal installer (CVE-2026-132165) does when it reinstalls a live site.
+  Portable version of one branch of 144ThreatHunter hunt TH-2026-0002.
+references:
+  - https://horizon3.ai/attack-research/vulnerabilities/cve-2026-132165/
+author: Jose (R0Liii)
+date: 2026-11-26
+tags:
+  - attack.initial-access
+  - attack.persistence
+  - attack.t1190
+  - attack.t1505.003
+logsource:
+  category: file_event
+  product: linux
+detection:
+  selection_file:
+    TargetFilename|endswith:
+      - '/settings.php'
+      - '/settings.local.php'
+    TargetFilename|contains: '/sites/'
+  selection_process:
+    Image|contains:
+      - '/php-fpm'
+      - '/php-cgi'
+      - '/lsphp'
+      - '/httpd'
+      - '/apache2'
+      - '/frankenphp'
+  condition: selection_file and selection_process
+falsepositives:
+  - Running the Drupal installer on purpose during a new build
+  - Hosting control panels or one-click installers that write settings.php through PHP
+level: high

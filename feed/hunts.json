@@ -21,6 +21,29 @@
       "validated": "syntax"
     },
     {
+      "cves": [
+        "CVE-2026-132165"
+      ],
+      "date": "2026-11-26",
+      "id": "TH-2026-0002",
+      "kql": "// TH-2026-0002 Drupal installer abuse on Linux web servers\n// Platform: Microsoft Defender XDR advanced hunting (Defender for Endpoint on Linux web servers)\n// For Microsoft Sentinel, replace Timestamp with TimeGenerated.\n// MITRE ATT&CK: T1190, T1505.003, T1059.004\n// Drupal installer abuse (CVE-2026-132165, SA-CORE-2026-017): settings.php rewritten by the\n// web server, PHP files dropped under sites/*/files, and shells spawned by PHP workers on the\n// same hosts.\nlet lookback = 14d;\nlet webWorker = @\"^(php(-fpm|-cgi)?[0-9.]*|lsphp[0-9.]*|httpd|apache2|nginx|frankenphp)$\";\nlet shellOrTool = dynamic([\"sh\",\"bash\",\"dash\",\"zsh\",\"curl\",\"wget\",\"python\",\"python3\",\"perl\",\"nc\",\"ncat\",\"socat\",\"base64\",\"chmod\",\"crontab\",\"id\",\"whoami\",\"uname\"]);\nlet SettingsWrites = DeviceFileEvents\n    | where Timestamp > ago(lookback)\n    | where ActionType in (\"FileCreated\", \"FileModified\", \"FileRenamed\")\n    | where FileName in~ (\"settings.php\", \"settings.local.php\")\n    | where FolderPath has \"/sites/\"\n    | where InitiatingProcessFileName matches regex webWorker\n    | extend Signal = \"settings.php written by web server process\", Detail = FolderPath;\nlet PhpInFiles = DeviceFileEvents\n    | where Timestamp > ago(lookback)\n    | where ActionType in (\"FileCreated\", \"FileModified\", \"FileRenamed\")\n    | where FolderPath has \"/sites/\" and FolderPath has \"/files/\"\n    | where FileName matches regex @\"(?i)\\.(php[0-9]?|phtml|phar|inc)$\"\n    | extend Signal = \"PHP file written under Drupal files directory\", Detail = FolderPath;\nlet DrupalHosts = union SettingsWrites, PhpInFiles | distinct DeviceId;\nlet WorkerShells = DeviceProcessEvents\n    | where Timestamp > ago(lookback)\n    | where DeviceId in (DrupalHosts)\n    | where InitiatingProcessFileName matches regex webWorker\n    | where FileName in~ (shellOrTool)\n    | extend Signal = \"PHP or web server worker spawned shell or tool\", Detail = ProcessCommandLine;\nunion SettingsWrites, PhpInFiles, WorkerShells\n| summarize FirstSeen = min(Timestamp), LastSeen = max(Timestamp), Events = count(),\n    Signals = make_set(Signal), Details = make_set(Detail, 20),\n    Initiators = make_set(InitiatingProcessCommandLine, 10),\n    Accounts = make_set(InitiatingProcessAccountName, 5)\n    by DeviceId, DeviceName\n| extend SignalCount = array_length(Signals)\n| order by SignalCount desc, LastSeen desc\n",
+      "platforms": [
+        "defender-xdr",
+        "sentinel"
+      ],
+      "severity": "critical",
+      "status": "experimental",
+      "summary": "Drupal core before 10.6.22, 11.3.22 and 11.4.13 lets an anonymous attacker use install.php to try to reinstall a live site, leading to takeover or code execution (CVE-2026-132165). Exploitation was reported from 19 November 2026 and CISA added it to KEV on 24 November. With no published indicators, this hunt looks on Linux web servers for settings.php written by PHP, PHP files under sites/*/files, and shells spawned by PHP workers on those hosts.",
+      "techniques": [
+        "T1190",
+        "T1505.003",
+        "T1059.004"
+      ],
+      "title": "Drupal installer abuse on Linux web servers",
+      "url": "https://github.com/R0Liii/144ThreatHunter-Queries/tree/main/hunts/2026/2026-11-26-drupal-installer-abuse-on-linux-web-servers",
+      "validated": "syntax"
+    },
+    {
       "cves": [],
       "date": "2026-11-26",
       "id": "TH-2026-0001",

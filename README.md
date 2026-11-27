@@ -16,6 +16,7 @@ Browse the [144 Threat Hunting library](https://144company.com/threat-hunting) f
 | Date | ID | Hunt | ATT&CK | Severity |
 | --- | --- | --- | --- | --- |
 | 2026-11-27 | [TH-2026-0003](hunts/2026/2026-11-27-scheduled-tasks-launching-encoded-powershell) | Scheduled tasks launching encoded PowerShell | T1053.005, T1059.001 | medium |
+| 2026-11-26 | [TH-2026-0002](hunts/2026/2026-11-26-drupal-installer-abuse-on-linux-web-servers) | Drupal installer abuse on Linux web servers | T1190, T1505.003, T1059.004 | critical |
 | 2026-11-26 | [TH-2026-0001](hunts/2026/2026-11-26-web-server-spawning-shells) | Web server worker processes spawning shells and recon tools | T1505.003, T1059.001, T1059.003 | high |
 <!-- latest-hunts:end -->
 

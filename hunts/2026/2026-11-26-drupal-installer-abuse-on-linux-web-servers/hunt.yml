@@ -1,0 +1,60 @@
+id: TH-2026-0002
+title: Drupal installer abuse on Linux web servers
+date: '2026-11-26'
+author: Jose (R0Liii)
+status: experimental
+severity: critical
+platforms:
+- defender-xdr
+- sentinel
+tables:
+- DeviceFileEvents
+- DeviceProcessEvents
+attack:
+  tactics:
+  - TA0001
+  - TA0003
+  - TA0002
+  techniques:
+  - T1190
+  - T1505.003
+  - T1059.004
+threat:
+  name: Drupal core installer remote code execution (SA-CORE-2026-017)
+  cves:
+  - CVE-2026-132165
+  actors: []
+summary: Drupal core before 10.6.22, 11.3.22 and 11.4.13 lets an anonymous attacker use install.php to
+  try to reinstall a live site, leading to takeover or code execution (CVE-2026-132165). Exploitation
+  was reported from 19 November 2026 and CISA added it to KEV on 24 November. With no published indicators,
+  this hunt looks on Linux web servers for settings.php written by PHP, PHP files under sites/*/files,
+  and shells spawned by PHP workers on those hosts.
+sources:
+- https://horizon3.ai/attack-research/vulnerabilities/cve-2026-132165/
+- https://safeguard.sh/resources/blog/drupal-core-cve-2026-132165-install-php-rce-kev
+- https://windowsforum.com/news/cve-2026-132165-drupal-installer-rce-under-active-exploitation-patch-and-block-install-php.454043/
+false_positives:
+- A deliberate new install or rebuild, where the installer legitimately writes settings.php through php-fpm
+- Hosting panels or one-click installers (cPanel Softaculous and similar) that write settings.php through
+  PHP
+- Modules that write generated PHP into sites/*/files, such as compiled Twig templates under files/php/twig
+- Cron or drush tasks run as the web server user that call shell utilities (drush itself runs under php)
+tuning: Exclude the compiled Twig cache path (sites/*/files/php/twig/) if it is noisy in your estate,
+  but review it first, since attackers can hide files there. Add known build hosts or deployment windows
+  as exclusions. The DrupalHosts scoping means the shell branch only fires on devices that also had a
+  Drupal file signal; remove the DeviceId filter to hunt PHP worker shells on all Linux servers. If you
+  collect web access logs in Sentinel, add a branch for requests to /core/install.php or /install.php
+  on production sites, especially POST requests and runs of 200 responses from one client since 18 November.
+triage:
+- Confirm the Drupal core version on the host; anything below 10.6.22, 11.3.22 or 11.4.13 is exposed if
+  install.php is reachable.
+- 'Compare settings.php with version control or a backup: look for a database host, name or credentials
+  you do not recognise.'
+- Check web access logs for /core/install.php and /install.php requests around FirstSeen, and note the
+  client IPs.
+- Review user 1 and any administrator accounts created after 18 November, plus newly enabled modules.
+- List PHP files under sites/*/files and any PHP files modified in the web root in the last two weeks,
+  and inspect them for web shell code.
+- If confirmed, take the site offline, preserve logs and the web root, rotate database and admin credentials,
+  block install.php in the web server config and patch.
+validated: syntax
