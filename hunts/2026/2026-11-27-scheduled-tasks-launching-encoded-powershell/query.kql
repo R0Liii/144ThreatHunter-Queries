@@ -1,0 +1,16 @@
+// TH-2026-0003 Scheduled tasks launching encoded PowerShell
+// Platform: Microsoft Defender XDR
+// For Microsoft Sentinel, replace Timestamp with TimeGenerated.
+// MITRE ATT&CK: T1053.005, T1059.001
+DeviceProcessEvents
+| where Timestamp >= ago(7d)
+| where ActionType == "ProcessCreated"
+| where FileName in~ ("powershell.exe", "pwsh.exe")
+| where InitiatingProcessFileName =~ "taskeng.exe"
+    or (InitiatingProcessFileName =~ "svchost.exe"
+        and InitiatingProcessCommandLine matches regex @"(?i)(^|[ \t])-s[ \t]+schedule($|[ \t])")
+| where ProcessCommandLine matches regex @"(?i)(^|[ \t])-(encodedcommand|enc|e)[ \t]+"
+| project Timestamp, DeviceId, DeviceName, ReportId, AccountDomain, AccountName,
+    FileName, FolderPath, ProcessId, ProcessCommandLine, InitiatingProcessFileName,
+    InitiatingProcessId, InitiatingProcessCommandLine
+| order by Timestamp desc
