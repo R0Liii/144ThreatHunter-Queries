@@ -1,0 +1,38 @@
+title: Task Scheduler Parent Launching Encoded PowerShell
+id: 363dfe43-b3ad-4b27-9b4f-6266b98e1300
+status: experimental
+description: Detects PowerShell with an encoded-command switch launched directly by a Windows Task Scheduler process. Review task registration and approved automation before attributing the activity.
+references:
+    - https://www.esentire.com/blog/vinci-rat-lives-in-the-microsoft-store
+    - https://attack.mitre.org/detectionstrategies/DET0441/
+author: Jose (R0Liii)
+date: 2026-11-27
+tags:
+    - attack.execution
+    - attack.persistence
+    - attack.t1053.005
+    - attack.t1059.001
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_child:
+        Image|endswith:
+            - '\powershell.exe'
+            - '\pwsh.exe'
+        CommandLine|re|i: '(^|[ \t])-(encodedcommand|enc|e)[ \t]+'
+    selection_task_engine:
+        ParentImage|endswith: '\taskeng.exe'
+    selection_schedule_service:
+        ParentImage|endswith: '\svchost.exe'
+        ParentCommandLine|re|i: '(^|[ \t])-s[ \t]+schedule($|[ \t])'
+    condition: selection_child and (selection_task_engine or selection_schedule_service)
+fields:
+    - Computer
+    - User
+    - CommandLine
+    - ParentImage
+    - ParentCommandLine
+falsepositives:
+    - Approved maintenance, backup or software deployment tasks that encode PowerShell arguments to handle nested quoting.
+level: medium

@@ -8,14 +8,19 @@ it was built from, known false positives, tuning advice and triage steps for whe
 
 Maintained by Jose ([@R0Liii](https://github.com/R0Liii)) · [144 Cybersecurity](https://144company.com/cyber)
 
+Browse the [144 Threat Hunting library](https://144company.com/threat-hunting) for defensive hunt notes and queries.
+
 ## Latest hunts
 
 <!-- latest-hunts:start -->
 | Date | ID | Hunt | ATT&CK | Severity |
 | --- | --- | --- | --- | --- |
+| 2026-11-27 | [TH-2026-0003](hunts/2026/2026-11-27-scheduled-tasks-launching-encoded-powershell) | Scheduled tasks launching encoded PowerShell | T1053.005, T1059.001 | medium |
 | 2026-11-26 | [TH-2026-0002](hunts/2026/2026-11-26-drupal-installer-abuse-on-linux-web-servers) | Drupal installer abuse on Linux web servers | T1190, T1505.003, T1059.004 | critical |
 | 2026-11-26 | [TH-2026-0001](hunts/2026/2026-11-26-web-server-spawning-shells) | Web server worker processes spawning shells and recon tools | T1505.003, T1059.001, T1059.003 | high |
 <!-- latest-hunts:end -->
+
+[Read TH-2026-0001 on 144company.com](https://144company.com/hunts/web-server-worker-shell-activity) for telemetry requirements and triage guidance.
 
 Browse everything: [by ATT&CK technique](index/by-technique.md) · [by platform](index/by-platform.md) ·
 [JSON feed](feed/hunts.json)
