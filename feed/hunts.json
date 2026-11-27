@@ -2,6 +2,26 @@
   "hunts": [
     {
       "cves": [],
+      "date": "2026-11-27",
+      "id": "TH-2026-0003",
+      "kql": "// TH-2026-0003 Scheduled tasks launching encoded PowerShell\n// Platform: Microsoft Defender XDR\n// For Microsoft Sentinel, replace Timestamp with TimeGenerated.\n// MITRE ATT&CK: T1053.005, T1059.001\nDeviceProcessEvents\n| where Timestamp >= ago(7d)\n| where ActionType == \"ProcessCreated\"\n| where FileName in~ (\"powershell.exe\", \"pwsh.exe\")\n| where InitiatingProcessFileName =~ \"taskeng.exe\"\n    or (InitiatingProcessFileName =~ \"svchost.exe\"\n        and InitiatingProcessCommandLine matches regex @\"(?i)(^|[ \\t])-s[ \\t]+schedule($|[ \\t])\")\n| where ProcessCommandLine matches regex @\"(?i)(^|[ \\t])-(encodedcommand|enc|e)[ \\t]+\"\n| project Timestamp, DeviceId, DeviceName, ReportId, AccountDomain, AccountName,\n    FileName, FolderPath, ProcessId, ProcessCommandLine, InitiatingProcessFileName,\n    InitiatingProcessId, InitiatingProcessCommandLine\n| order by Timestamp desc\n",
+      "platforms": [
+        "defender-xdr",
+        "sentinel"
+      ],
+      "severity": "medium",
+      "status": "experimental",
+      "summary": "eSentire observed Vinci RAT persist through a scheduled task that ran obfuscated PowerShell. The hunt looks for a related behavior: Windows Task Scheduler directly launching PowerShell with an encoded-command switch. A match is a lead for investigating the task and its origin. The query covers a subset of scheduled PowerShell activity and has no campaign-specific indicators.",
+      "techniques": [
+        "T1053.005",
+        "T1059.001"
+      ],
+      "title": "Scheduled tasks launching encoded PowerShell",
+      "url": "https://github.com/R0Liii/144ThreatHunter-Queries/tree/main/hunts/2026/2026-11-27-scheduled-tasks-launching-encoded-powershell",
+      "validated": "syntax"
+    },
+    {
+      "cves": [],
       "date": "2026-11-26",
       "id": "TH-2026-0001",
       "kql": "// TH-2026-0001 Web server worker processes spawning shells and recon tools\n// Platform: Microsoft Defender XDR advanced hunting.\n// For Microsoft Sentinel, replace Timestamp with TimeGenerated.\n// MITRE ATT&CK: T1505.003, T1059.001, T1059.003, T1033\nlet lookback = 7d;\nlet WebWorkers = dynamic([\"w3wp.exe\", \"httpd.exe\", \"nginx.exe\", \"tomcat.exe\", \"tomcat8.exe\", \"tomcat9.exe\", \"php-cgi.exe\", \"UMWorkerProcess.exe\"]);\nlet SuspiciousChildren = dynamic([\"cmd.exe\", \"powershell.exe\", \"pwsh.exe\", \"whoami.exe\", \"net.exe\", \"net1.exe\", \"nltest.exe\", \"systeminfo.exe\", \"ipconfig.exe\", \"quser.exe\", \"tasklist.exe\", \"certutil.exe\", \"bitsadmin.exe\", \"curl.exe\", \"wget.exe\", \"rundll32.exe\", \"regsvr32.exe\", \"mshta.exe\", \"wmic.exe\", \"reg.exe\", \"schtasks.exe\"]);\nDeviceProcessEvents\n| where Timestamp > ago(lookback)\n| where InitiatingProcessFileName in~ (WebWorkers)\n| where FileName in~ (SuspiciousChildren)\n// ASP.NET compilation noise is csc.exe/cvtres.exe, which are not in the child list.\n// Add known-good parent command lines here after baselining:\n| where not(InitiatingProcessCommandLine has_any (\"<known-good-app-pool>\"))\n| summarize\n    FirstSeen = min(Timestamp),\n    LastSeen = max(Timestamp),\n    Executions = count(),\n    Children = make_set(FileName, 20),\n    SampleCommands = make_set(ProcessCommandLine, 10)\n    by DeviceName, InitiatingProcessFileName, InitiatingProcessCommandLine, AccountName\n| order by Executions desc\n",
